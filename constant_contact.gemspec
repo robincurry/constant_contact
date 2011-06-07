@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   
   s.add_dependency("activeresource")
   s.add_dependency("builder", "~> 2.1.2")
+  s.add_dependency("oauth-active-resource")
   
   s.add_development_dependency("activesupport")
   s.add_development_dependency("shoulda")
