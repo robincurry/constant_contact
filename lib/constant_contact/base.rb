@@ -30,6 +30,32 @@ module ConstantContact
         @api_key = api_key
       end
       
+      def oauth_consumer_secret
+        if defined?(@oauth_consumer_secret)
+          @oauth_consumer_secret
+        elsif superclass != Object && superclass.oauth_consumer_secret
+          superclass.oauth_consumer_secret.dup.freeze
+        end
+      end
+      
+      def oauth_consumer_secret=(oauth_consumer_secret)
+        @connection = nil
+        @oauth_consumer_secret = oauth_consumer_secret
+      end
+      
+      def oauth_access_token_key
+        if defined?(@oauth_access_token_key)
+          @oauth_access_token_key
+        elsif superclass != Object && superclass.oauth_access_token_key
+          superclass.oauth_access_token_key.dup.freeze
+        end
+      end
+      
+      def oauth_access_token_key=(oauth_access_token_key)
+        @connection = nil
+        @oauth_access_token_key = oauth_access_token_key
+      end
+      
       def oauth_access_token_secret
         if defined?(@oauth_access_token_secret)
           @oauth_access_token_secret
@@ -43,36 +69,9 @@ module ConstantContact
         @oauth_access_token_secret = oauth_access_token_secret
       end
       
-      def oauth_consumer_key
-        if defined?(@oauth_consumer_key)
-          @oauth_consumer_key
-        elsif superclass != Object && superclass.oauth_consumer_key
-          superclass.oauth_consumer_key.dup.freeze
-        end
-      end
-      
-      def oauth_consumer_key=(oauth_consumer_key)
-        @connection = nil
-        @oauth_consumer_key = oauth_consumer_key
-        @use_oauth = true
-      end
-      
-      def oauth_consumer_secret
-        if defined?(@oauth_consumer_key)
-          @oauth_consumer_key
-        elsif superclass != Object && superclass.oauth_consumer_secret
-          superclass.oauth_consumer_secret.dup.freeze
-        end
-      end
-      
-      def oauth_consumer_secret=(oauth_consumer_secret)
-        @connection = nil
-        @oauth_consumer_secret = oauth_consumer_secret
-      end
-      
       def connection(refresh = false)
         if defined?(@connection) || superclass == Object
-          if defined?(@use_oauth) 
+          if defined?(@oauth_consumer_secret) 
             @connection = OAuthActiveResource::Connection.new(
               OAuth::AccessToken.from_hash(
                 OAuth::Consumer.new(api_key, oauth_consumer_secret, {
