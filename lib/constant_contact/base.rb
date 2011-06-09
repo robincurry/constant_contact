@@ -82,8 +82,6 @@ module ConstantContact
               :oauth_token => oauth_access_token_key,
               :oauth_token_secret => oauth_access_token_secret),
             site, format) if refresh || @connection.nil?
-            # Don't set @connection.user when doing OAuth, or ARes will try to do digest
-            # authentication.
           else
             @connection = ActiveResource::Connection.new(site, format) if refresh || @connection.nil?
             @connection.password = password if password
