@@ -1,6 +1,6 @@
 module ConstantContact
   class Base < ActiveResource::Base
-    
+
     self.site = "https://api.constantcontact.com"
     self.format = :atom
 
@@ -13,7 +13,7 @@ module ConstantContact
       def parse_id(url)
         url.to_s.split('/').last.to_i
       end
-    
+
       def api_key
         if defined?(@api_key)
           @api_key
@@ -26,7 +26,7 @@ module ConstantContact
         @connection = nil
         @api_key = api_key
       end
-      
+
       def connection(refresh = false)
         if defined?(@connection) || superclass == Object
           @connection = ActiveResource::Connection.new(site, format) if refresh || @connection.nil?
@@ -38,19 +38,19 @@ module ConstantContact
           superclass.connection
         end
       end
-      
+
       def collection_path(prefix_options = {}, query_options = nil)
         prefix_options, query_options = split_options(prefix_options) if query_options.nil?
         "/ws/customers/#{self.user}#{prefix(prefix_options)}#{collection_name}#{query_string(query_options)}"
-      end  
-      
+      end
+
       def element_path(id, prefix_options = {}, query_options = nil)
         prefix_options, query_options = split_options(prefix_options) if query_options.nil?
         integer_id = parse_id(id)
         id_val = integer_id.zero? ? nil : "/#{integer_id}"
         "#{collection_path}#{id_val}#{query_string(query_options)}"
       end
-      
+
       # Slight modification to AR::Base.find_every to handle instances
       # where a single element is returned. This enables calling
       # <tt>find(:first, {:params => {:email => 'sample@example.com'}})
@@ -60,11 +60,11 @@ module ConstantContact
           instantiate_collection(get(from, options[:params]))
         when String
           path = "#{from}#{query_string(options[:params])}"
-          instantiate_collection(connection.get(path, headers) || [])
+          instantiate_collection(format.decode(connection.get(path, headers).body) || [])
         else
           prefix_options, query_options = split_options(options[:params])
           path = collection_path(prefix_options, query_options)
-          result = connection.get(path, headers)
+          result = format.decode(connection.get(path, headers).body)
           case result
           when Hash
             instantiate_collection( [ result ], prefix_options )
@@ -74,7 +74,7 @@ module ConstantContact
         end
       end
     end
-    
+
     # Slightly tweaked ARes::Base's implementation so all the
     # attribute names are looked up using camelcase since
     # that's how the CC API returns them.
@@ -95,7 +95,7 @@ module ConstantContact
     def int_id
       @id ||= self.class.parse_id(self.attributes['id'])
     end
-    
+
     # Mimics ActiveRecord's version
     def update_attributes(atts={})
       camelcased_hash = {}
@@ -103,32 +103,32 @@ module ConstantContact
       self.attributes.update(camelcased_hash)
       save
     end
-    
+
     # Mimic ActiveRecord (snagged from HyperactiveResource).
     def save
       return false unless valid?
-      before_save    
+      before_save
       successful = super
       after_save if successful
       successful
-    end 
-    
+    end
+
     def before_save
     end
-    
+
     def after_save
     end
-    
-    def validate      
+
+    def validate
     end
 
     # So client-side validations run
-    def valid? 
+    def valid?
       errors.clear
-      validate 
-      super 
+      validate
+      super
     end
-    
+
     def encode
       "<entry xmlns=\"http://www.w3.org/2005/Atom\">
         <title type=\"text\"> </title>
